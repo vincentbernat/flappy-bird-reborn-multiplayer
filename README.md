@@ -1,8 +1,10 @@
 # Flappy Bird Reborn Multiplayer
 
-This is a fork of
-[Flappy Bird Reborn](https://github.com/codevinsky/flappy-bird-reborn),
-a flappy bird clone using [Phaser](http://phaser.io/).
+This is a fork of [Flappy Bird Reborn][] a flappy bird clone using
+[Phaser][], a game engine.
+
+[Flappy Bird Reborn]: https://github.com/codevinsky/flappy-bird-reborn
+[Phaser]: http://phaser.io/
 
 What has been modified:
 
