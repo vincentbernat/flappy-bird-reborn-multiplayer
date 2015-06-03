@@ -112,7 +112,22 @@ Play.prototype = {
       this.pipes.callAll('stop');
       this.pipeGenerator.timer.stop();
       this.ground.stopScroll();
+
+      // add a restart button with a callback
+      var t = this.game.time.events.add(Phaser.Timer.SECOND * 2,
+                                        this.restartButton, this);
+      t.timer.start();
     }
+  },
+  restartButton: function() {
+    this.startButton = this.game.add.button(this.game.width / 2,
+                                            300, 'startButton',
+                                            this.restartClick,
+                                            this);
+    this.startButton.anchor.setTo(0.5, 0.5);
+  },
+  restartClick: function() {
+    this.game.state.start('play');
   },
   generatePipes: function() {
     var pipeY = this.game.rnd.integerInRange(-100, 100);
