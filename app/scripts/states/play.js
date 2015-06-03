@@ -87,6 +87,9 @@ Play.prototype = {
       this.bird.body.allowGravity = true;
       this.bird.alive = true;
 
+      // Use a common seed for randomness
+      this.game.rnd.sow([5654, 7655, 8765]);
+
       // add a timer
       this.pipeGenerator = this.game.time.events.loop(Phaser.Timer.SECOND * 1.25,
                                                       this.generatePipes, this);
