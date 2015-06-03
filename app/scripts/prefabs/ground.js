@@ -15,6 +15,10 @@ var Ground = function(game, x, y, width, height) {
   // to be affected by gravity or external forces
   this.body.allowGravity = false;
   this.body.immovable = true;
+
+  // Workaround for bug in 2.3.0:
+  // https://github.com/photonstorm/phaser/commit/5fb113017564fce04356e90d0fb3e9d605e5348c
+  this.physicsType = Phaser.SPRITE;
 };
 
 Ground.prototype = Object.create(Phaser.TileSprite.prototype);
