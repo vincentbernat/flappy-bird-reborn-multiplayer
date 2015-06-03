@@ -136,7 +136,7 @@ Play.prototype = {
       pipeGroup = new PipeGroup(this.game,
                                 this.pipes);
     }
-    pipeGroup.reset(this.game.width, pipeY);
+    pipeGroup.reset(576, pipeY);
   }
 };
 

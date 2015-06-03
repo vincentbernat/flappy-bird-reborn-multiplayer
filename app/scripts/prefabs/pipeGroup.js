@@ -25,7 +25,9 @@ PipeGroup.prototype.update = function() {
 
 PipeGroup.prototype.checkWorldBounds = function() {
   if(!this.topPipe.inWorld) {
-    this.exists = false;
+    if(this.topPipe.body.x <= 0) {
+      this.exists = false;
+    }
   }
 };
 
