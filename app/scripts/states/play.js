@@ -160,7 +160,7 @@ Play.prototype = {
       this.socket.emit('position', this.bird.serialize());
 
       // add a restart button with a callback
-      var t = this.game.time.events.add(Phaser.Timer.SECOND * 2,
+      var t = this.game.time.events.add(Phaser.Timer.SECOND * 1,
                                         this.restartButton, this);
       t.timer.start();
     }
