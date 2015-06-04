@@ -13,6 +13,10 @@ What has been modified:
  - multiplayer through Socket.IO.
  - score board removed.
 
+Idea has been stolen from @vladimirkosmala: [xdk-flappy-multi][].
+
+[xdk-flappy-multi]: https://github.com/vladimirkosmala/xdk-flappy-multi
+
 ## Build
 
     npm install

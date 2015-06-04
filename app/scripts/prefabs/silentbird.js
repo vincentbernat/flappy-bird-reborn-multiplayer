@@ -21,7 +21,7 @@ var SilentBird = function(game, x, y, frame, name) {
   // until the game is started
   this.game.physics.arcade.enableBody(this);
   this.body.allowGravity = false;
-  this.body.collideWorldBounds = true;
+  this.body.collideWorldBounds = false;
 
   this.events.onKilled.add(this.onKilled, this);
 };
@@ -89,12 +89,16 @@ SilentBird.prototype.serialize = function() {
 
 // Unserialize ourself
 SilentBird.prototype.unserialize = function(data) {
-  this.body.allowGravity = data.allowGravity;
+  this.body.allowGravity = data.gravity;
   this.angle = data.angle;
   this.alive = data.alive;
   this.onGround = data.onGround;
   this.reset(data.x, data.y);
   this.body.velocity.setTo(data.dx, data.dy);
+
+  if (this.body.velocity.x === 0) {
+    this.animations.stop();
+  }
 };
 
 module.exports = SilentBird;

@@ -11,6 +11,8 @@ var Bird = function(game, x, y, frame) {
   this.pipeHitSound = this.game.add.audio('pipeHit');
   this.groundHitSound = this.game.add.audio('groundHit');
 
+  this.body.collideWorldBounds = false;
+
   this.alpha = 1;
 };
 

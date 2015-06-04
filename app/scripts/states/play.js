@@ -3,7 +3,8 @@ var Phaser = require('Phaser'),
     Bird = require('../prefabs/bird'),
     SilentBird = require('../prefabs/silentbird'),
     Ground = require('../prefabs/ground'),
-    PipeGroup = require('../prefabs/pipeGroup');
+    PipeGroup = require('../prefabs/pipeGroup'),
+    io = require('socket.io-client');
 
 var MAX_WIDTH = 576,
     DEBUG = false;
@@ -42,11 +43,11 @@ Play.prototype = {
     // add keyboard controls
     this.flapKey = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     this.flapKey.onDown.addOnce(this.startGame, this);
-    this.flapKey.onDown.add(this.bird.flap, this.bird);
+    this.flapKey.onDown.add(this.flap, this);
 
     // add mouse/touch controls
     this.game.input.onDown.addOnce(this.startGame, this);
-    this.game.input.onDown.add(this.bird.flap, this.bird);
+    this.game.input.onDown.add(this.flap, this);
 
     // keep the spacebar from propogating up to the browser
     this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
@@ -63,18 +64,41 @@ Play.prototype = {
 
     this.gameover = false;
 
+    // Handle socket.io
+    this.clones = this.game.add.group();
+    this.socket = io.connect();
+    this.socket.on('position', function(data) {
+      var name = 'C' + data.sender;
+      console.debug('[Flappy] Position received for ' + name, data);
+
+      // Do we have already this one?
+      var clone = this.clones.filter(function(child) {
+        console.log(child.name, name, child.name === name, child.exists);
+        return child.name === name;
+      }, true).first;
+      if (!clone) {
+        clone = this.clones.getFirstExists(false);
+      }
+      if (!clone) {
+        clone = new SilentBird(this.game, data.x, data.y, null, name);
+        this.clones.add(clone);
+      }
+      clone.unserialize(data);
+    }.bind(this));
   },
 
   update: function() {
     // enable collisions between the bird and the ground
     this.game.physics.arcade.collide(this.bird, this.ground,
                                      this.deathHandler, null, this);
+    this.game.physics.arcade.collide(this.clones, this.ground);
 
     if (!this.gameover) {
         // enable collisions between the bird and each group in the pipes group
         this.pipes.forEach(function(pipeGroup) {
           this.game.physics.arcade.collide(this.bird, pipeGroup,
                                            this.deathHandler, null, this);
+          this.game.physics.arcade.collide(this.clones, pipeGroup);
         }, this);
     }
 
@@ -95,7 +119,7 @@ Play.prototype = {
     this.game.input.keyboard.removeKey(Phaser.Keyboard.SPACEBAR);
     this.bird.destroy();
     this.pipes.destroy();
-    this.socket.disconnect();
+    this.clones.destroy();
   },
 
   startGame: function() {
@@ -103,6 +127,7 @@ Play.prototype = {
       this.bird.body.allowGravity = true;
       this.bird.alive = true;
       this.bird.body.velocity.x = 200;
+      this.socket.emit('position', this.bird.serialize());
 
       // Use a common seed for randomness
       this.game.rnd.sow([5654, 7655, 8765]);
@@ -116,6 +141,11 @@ Play.prototype = {
     }
   },
 
+  flap: function() {
+    this.bird.flap();
+    this.socket.emit('position', this.bird.serialize());
+  },
+
   deathHandler: function(bird, enemy) {
     bird.deathHandler(enemy);
 
@@ -126,6 +156,7 @@ Play.prototype = {
       this.pipes.callAll('stop');
       this.pipeGenerator.timer.stop();
       this.ground.stopScroll();
+      this.socket.emit('position', this.bird.serialize());
 
       // add a restart button with a callback
       var t = this.game.time.events.add(Phaser.Timer.SECOND * 2,
