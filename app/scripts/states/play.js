@@ -27,6 +27,7 @@ Play.prototype = {
                                                this.game.height,
                                                'background');
     this.background.fixedToCamera = true;
+    this.background.autoScroll(-10, 0);
 
     // create and add a group to hold our pipeGroup prefabs
     this.pipes = this.game.add.group();
@@ -155,6 +156,7 @@ Play.prototype = {
       this.pipes.callAll('stop');
       this.pipeGenerator.timer.stop();
       this.ground.stopScroll();
+      this.background.stopScroll();
       this.socket.emit('position', this.bird.serialize());
 
       // add a restart button with a callback
