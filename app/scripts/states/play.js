@@ -73,7 +73,6 @@ Play.prototype = {
 
       // Do we have already this one?
       var clone = this.clones.filter(function(child) {
-        console.log(child.name, name, child.name === name, child.exists);
         return child.name === name;
       }, true).first;
       if (!clone) {
