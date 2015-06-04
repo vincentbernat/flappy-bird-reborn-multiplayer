@@ -1,9 +1,12 @@
 'use strict';
 var Phaser = require('Phaser'),
     Bird = require('../prefabs/bird'),
+    SilentBird = require('../prefabs/silentbird'),
     Ground = require('../prefabs/ground'),
-    Pipe = require('../prefabs/pipe'),
     PipeGroup = require('../prefabs/pipeGroup');
+
+var MAX_WIDTH = 576,
+    DEBUG = false;
 
 function Play() {
 }
@@ -12,16 +15,17 @@ Play.prototype = {
   create: function() {
     // start the phaser arcade physics engine
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
+    this.game.world.setBounds(0, 0, MAX_WIDTH, this.game.height);
 
     // give our world an initial gravity of 1200
     this.game.physics.arcade.gravity.y = 1200;
 
     // add the background sprite
-    console.log('hello');
     this.background = this.game.add.tileSprite(0, 0,
                                                this.game.width,
                                                this.game.height,
                                                'background');
+    this.background.fixedToCamera = true;
 
     // create and add a group to hold our pipeGroup prefabs
     this.pipes = this.game.add.group();
@@ -29,6 +33,7 @@ Play.prototype = {
     // create and add a new Bird object
     this.bird = new Bird(this.game, 100, this.game.height / 2);
     this.game.add.existing(this.bird);
+    this.game.camera.follow(this.bird);
 
     // create and add a new Ground object
     this.ground = new Ground(this.game, 0, 400, this.game.width, 112);
@@ -58,8 +63,6 @@ Play.prototype = {
 
     this.gameover = false;
 
-    this.pipeHitSound = this.game.add.audio('pipeHit');
-    this.groundHitSound = this.game.add.audio('groundHit');
   },
 
   update: function() {
@@ -75,17 +78,31 @@ Play.prototype = {
         }, this);
     }
 
+    // Update world bounds
+    this.game.world.setBounds(this.bird.body.x - 100, 0,
+                              MAX_WIDTH, this.game.height);
+
   },
+
+  render: function() {
+    if (DEBUG) {
+      this.game.debug.cameraInfo(this.game.camera, 10, 10);
+      this.game.debug.spriteCoords(this.bird, 10, this.game.height - 60);
+    }
+  },
+
   shutdown: function() {
     this.game.input.keyboard.removeKey(Phaser.Keyboard.SPACEBAR);
     this.bird.destroy();
     this.pipes.destroy();
+    this.socket.disconnect();
   },
 
   startGame: function() {
     if (!this.bird.alive && !this.gameover) {
       this.bird.body.allowGravity = true;
       this.bird.alive = true;
+      this.bird.body.velocity.x = 200;
 
       // Use a common seed for randomness
       this.game.rnd.sow([5654, 7655, 8765]);
@@ -98,15 +115,12 @@ Play.prototype = {
       this.instructionGroup.destroy();
     }
   },
-  deathHandler: function(bird, enemy) {
-    if (enemy instanceof Ground && !this.bird.onGround) {
-      this.groundHitSound.play();
-      this.bird.onGround = true;
-    } else if (enemy instanceof Pipe){
-      this.pipeHitSound.play();
-    }
 
-    if (!this.gameover) {
+  deathHandler: function(bird, enemy) {
+    bird.deathHandler(enemy);
+
+    // If we are dead, it's game over
+    if (bird === this.bird && !this.gameover) {
       this.gameover = true;
       this.bird.kill();
       this.pipes.callAll('stop');
@@ -119,16 +133,20 @@ Play.prototype = {
       t.timer.start();
     }
   },
+
   restartButton: function() {
     this.startButton = this.game.add.button(this.game.width / 2,
                                             300, 'startButton',
                                             this.restartClick,
                                             this);
+    this.startButton.fixedToCamera = true;
     this.startButton.anchor.setTo(0.5, 0.5);
   },
+
   restartClick: function() {
     this.game.state.start('play');
   },
+
   generatePipes: function() {
     var pipeY = this.game.rnd.integerInRange(-100, 100);
     var pipeGroup = this.pipes.getFirstExists(false);
@@ -136,7 +154,7 @@ Play.prototype = {
       pipeGroup = new PipeGroup(this.game,
                                 this.pipes);
     }
-    pipeGroup.reset(576, pipeY);
+    pipeGroup.reset(this.bird.body.x - 100 + MAX_WIDTH, pipeY);
   }
 };
 
