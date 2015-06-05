@@ -96,8 +96,10 @@ SilentBird.prototype.unserialize = function(data) {
   this.reset(data.x, data.y);
   this.body.velocity.setTo(data.dx, data.dy);
 
-  if (this.body.velocity.x === 0) {
-    this.animations.stop();
+  if (data.event === 'flap') {
+    this.game.add.tween(this).to({angle: -40}, 100).start();
+  } else if (data.event === 'killed') {
+    this.kill();
   }
 };
 

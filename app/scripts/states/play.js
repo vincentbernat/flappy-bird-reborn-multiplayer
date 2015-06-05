@@ -143,7 +143,10 @@ Play.prototype = {
 
   flap: function() {
     this.bird.flap();
-    this.socket.emit('position', this.bird.serialize());
+
+    var data = this.bird.serialize();
+    data.event = 'flap';
+    this.socket.emit('position', data);
   },
 
   deathHandler: function(bird, enemy) {
@@ -157,7 +160,10 @@ Play.prototype = {
       this.pipeGenerator.timer.stop();
       this.ground.stopScroll();
       this.background.stopScroll();
-      this.socket.emit('position', this.bird.serialize());
+
+      var data = this.bird.serialize();
+      data.event = 'killed';
+      this.socket.emit('position', data);
 
       // add a restart button with a callback
       var t = this.game.time.events.add(Phaser.Timer.SECOND * 1,
