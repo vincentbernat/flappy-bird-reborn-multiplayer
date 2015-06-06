@@ -23,6 +23,10 @@ Idea has been stolen from @vladimirkosmala: [xdk-flappy-multi][].
     npm install -g grunt-cli
     grunt
 
+Once built, you can create a Docker container:
+
+    docker build -t vincentbernat/flappy-bird-reborn .
+
 ## Use
 
     node server.js
